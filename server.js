@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const http = require('http');
 const socketIo = require('socket.io');
+const path = require('path'); // Thêm module path
 const User = require('./models/User');
 const Message = require('./models/Message');
 
@@ -9,22 +10,38 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
+// Middleware cho API
+app.use(express.json());
+
 // Kết nối tới MongoDB
 mongoose.connect('mongodb://localhost:27017/chat-app', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-}).then(() => console.log('MongoDB connected'));
+}).then(() => console.log('MongoDB connected'))
+  .catch((err) => console.error('MongoDB connection error:', err));
 
-// Middleware cho API
-app.use(express.json());
+// Phục vụ các tệp tĩnh từ thư mục public
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Đăng ký API tại đây...
+// Route để trả về index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
-// Socket.io event
+// Đăng ký các route ở đây
+const authRoutes = require('./routes/auth');
+app.use('/api/auth', authRoutes);
+
+const chatRoutes = require('./routes/chat');
+app.use('/api/chat', chatRoutes);
+
+// Sự kiện cho Socket.io
 io.on('connection', (socket) => {
     console.log('New client connected');
+
     socket.on('joinRoom', ({ roomId }) => {
         socket.join(roomId);
+        console.log(`User joined room: ${roomId}`);
     });
 
     socket.on('sendMessage', async ({ roomId, senderID, content }) => {
@@ -38,5 +55,5 @@ io.on('connection', (socket) => {
     });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8081;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

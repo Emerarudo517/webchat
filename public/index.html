@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <style>
+        /* CSS cơ bản cho giao diện */
+        #messages {
+            border: 1px solid #ccc;
+            height: 300px;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chat Room</h1>
+    <div id="messages"></div>
+    <input id="messageInput" type="text" placeholder="Enter message..." />
+    <button id="sendButton">Send</button>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        // Khi nhấn nút Send
+        document.getElementById('sendButton').addEventListener('click', () => {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value;
+
+            // Gửi tin nhắn đến server
+            socket.emit('sendMessage', {
+                roomId: 'room1', // ID phòng chat, thay đổi theo nhu cầu
+                senderID: 'user1', // ID người gửi, thay đổi theo nhu cầu
+                content: message
+            });
+
+            // Xóa input
+            messageInput.value = '';
+        });
+
+        // Nhận tin nhắn mới từ server
+        socket.on('newMessage', (message) => {
+            console.log('New message received:', message); // Thêm log này để xem tin nhắn nhận được
+            const messagesContainer = document.getElementById('messages-container');
+            const messageElement = document.createElement('div');
+            messageElement.textContent = `${message.senderID}: ${message.content}`;
+            messagesContainer.appendChild(messageElement);
+        });
+    </script>
+</body>
+</html>
