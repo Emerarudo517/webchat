@@ -8,7 +8,12 @@ const Message = require('./models/Message');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = socketIo(server, {
+    cors: {
+        origin: '*', // Hoặc chỉ định domain cụ thể như 'http://localhost:8847'
+        methods: ['GET', 'POST']
+    }
+});
 
 // Middleware cho API
 app.use(express.json());
@@ -47,13 +52,15 @@ io.on('connection', (socket) => {
     socket.on('sendMessage', async ({ roomId, senderID, content }) => {
         const message = new Message({ roomID: roomId, senderID, content });
         await message.save();
+        console.log(`Message saved: ${content}`); // Log khi lưu tin nhắn thành công
         io.to(roomId).emit('newMessage', message);
-    });
+        console.log(`Message sent to room ${roomId}:`, message); // Log khi gửi sự kiện `newMessage`
+    });    
 
     socket.on('disconnect', () => {
         console.log('Client disconnected');
     });
 });
 
-const PORT = process.env.PORT || 8081;
+const PORT = process.env.PORT || 8847;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

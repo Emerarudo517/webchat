@@ -5,49 +5,127 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
     <style>
-        /* CSS cơ bản cho giao diện */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #chat-container {
+            background: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            max-width: 100%;
+            padding: 20px;
+        }
+
         #messages {
-            border: 1px solid #ccc;
+            border: 1px solid #ddd;
             height: 300px;
             overflow-y: scroll;
             margin-bottom: 10px;
+            padding: 10px;
+        }
+
+        #messages div {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 3px;
+            background-color: #f1f1f1;
+        }
+
+        #messageInput {
+            width: calc(100% - 60px);
+            padding: 10px;
+            margin-right: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        #sendButton {
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        #sendButton:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <h1>Chat Room</h1>
-    <div id="messages"></div>
-    <input id="messageInput" type="text" placeholder="Enter message..." />
-    <button id="sendButton">Send</button>
+    <div id="chat-container">
+        <h2>Chat Room</h2>
+        <div id="messages"></div>
+        <input id="messageInput" type="text" placeholder="Enter message..." />
+        <button id="sendButton">Send</button>
+    </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io();
+        // Kết nối với server
+        const socket = io('http://localhost:8847');
+
+        // Khi kết nối thành công
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+
+        // Khi ngắt kết nối
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+        });
 
         // Khi nhấn nút Send
-        document.getElementById('sendButton').addEventListener('click', () => {
-            const messageInput = document.getElementById('messageInput');
-            const message = messageInput.value;
+        document.getElementById('sendButton').addEventListener('click', sendMessage);
 
-            // Gửi tin nhắn đến server
-            socket.emit('sendMessage', {
-                roomId: 'room1', // ID phòng chat, thay đổi theo nhu cầu
-                senderID: 'user1', // ID người gửi, thay đổi theo nhu cầu
-                content: message
-            });
-
-            // Xóa input
-            messageInput.value = '';
+        // Gửi tin nhắn khi nhấn Enter
+        document.getElementById('messageInput').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
         });
+
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+
+            // Kiểm tra nếu message không rỗng
+            if (message) {
+                socket.emit('sendMessage', {
+                    roomId: 'room1',
+                    senderID: 'user1',
+                    content: message
+                });
+                messageInput.value = '';
+            }
+        }
 
         // Nhận tin nhắn mới từ server
         socket.on('newMessage', (message) => {
-            console.log('New message received:', message); // Thêm log này để xem tin nhắn nhận được
-            const messagesContainer = document.getElementById('messages-container');
-            const messageElement = document.createElement('div');
-            messageElement.textContent = `${message.senderID}: ${message.content}`;
-            messagesContainer.appendChild(messageElement);
+            console.log('New message received:', message);
+            displayMessage(message.senderID, message.content);
         });
+
+        // Hàm hiển thị tin nhắn
+        function displayMessage(senderID, content) {
+            const messagesContainer = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.textContent = `${senderID}: ${content}`;
+            messagesContainer.appendChild(messageElement);
+
+            // Cuộn xuống dưới cùng mỗi khi có tin nhắn mới
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
     </script>
 </body>
 </html>
