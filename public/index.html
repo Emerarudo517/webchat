@@ -5,74 +5,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat App</title>
-  <style>
-    body { 
-      font-family: Arial, sans-serif; 
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      margin: 0;
-    }
-    #messages { 
-      list-style-type: none; 
-      padding: 0; 
-      flex: 1; 
-      overflow-y: auto; 
-      display: flex; 
-      flex-direction: column-reverse;
-    }
-    #messages li { 
-      padding: 8px; 
-      margin-bottom: 10px; 
-      background-color: #f4f4f4; 
-      border-radius: 4px; 
-    }
-    #form { 
-      display: flex; 
-      padding: 10px; 
-      border-top: 1px solid #ccc; 
-    }
-    #input { 
-      flex: 1; 
-      padding: 10px; 
-    }
-    #send { 
-      padding: 10px; 
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <ul id="messages"></ul>
   <form id="form" action="">
-    <input id="input" autocomplete="off" /><button id="send">Send</button>
+    <input id="input" autocomplete="off" placeholder="Type a message..." />
+    <input type="file" id="imageInput" accept="image/*,video/*" multiple style="display: none;" />
+    <input type="file" id="fileInput" style="display: none;" />
+    <button type="button" id="sendImage">Send Image/Video</button>
+    <button type="button" id="sendFile">Send File</button>
+    <button type="submit" id="send">Send</button>
   </form>
 
   <script src="/socket.io/socket.io.js"></script>
-  <script>
-    const socket = io();
-    let userName = '';
-
-    socket.on('assign name', (name) => {
-      userName = name;
-    });
-
-    const form = document.getElementById('form');
-    const input = document.getElementById('input');
-    const messages = document.getElementById('messages');
-
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      if (input.value) {
-        socket.emit('chat message', input.value);
-        input.value = '';
-      }
-    });
-
-    socket.on('chat message', (msg) => {
-      const item = document.createElement('li');
-      item.innerHTML = `<strong>${msg.user}</strong> <em>${msg.time}</em><br>${msg.text}`;
-      messages.insertBefore(item, messages.firstChild);
-    });
-  </script>
+  <script src="scripts.js"></script>
 </body>
 </html>

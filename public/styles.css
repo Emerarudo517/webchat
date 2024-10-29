@@ -1,0 +1,38 @@
+/* public/styles.css */
+body { 
+  font-family: Arial, sans-serif; 
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  margin: 0;
+}
+#messages { 
+  list-style-type: none; 
+  padding: 0; 
+  flex: 1; 
+  overflow-y: auto; 
+  display: flex; 
+  flex-direction: column-reverse;
+}
+#messages li { 
+  padding: 8px; 
+  margin-bottom: 10px; 
+  background-color: #f4f4f4; 
+  border-radius: 4px; 
+}
+#form { 
+  display: flex; 
+  padding: 10px; 
+  border-top: 1px solid #ccc; 
+}
+#input { 
+  flex: 1; 
+  padding: 10px; 
+}
+#send, #sendImage, #sendFile { 
+  padding: 10px; 
+}
+.media {
+  height: 200px;
+  max-width: 1080px;
+}

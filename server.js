@@ -6,7 +6,9 @@ const moment = require('moment');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = socketIo(server, {
+  maxHttpBufferSize: 5 * 1024 * 1024 // 5MB
+});
 
 app.use(express.static('public'));
 
@@ -23,7 +25,7 @@ io.on('connection', (socket) => {
     const now = moment();
     const isToday = now.isSame(moment(), 'day');
     const time = isToday ? `Today at ${now.format('h:mm A')}` : now.format('MMMM Do YYYY, h:mm A');
-    io.emit('chat message', { user: guestName, text: msg, time: time });
+    io.emit('chat message', { user: guestName, text: msg.text, time: time, files: msg.files });
   });
 
   socket.on('disconnect', () => {
