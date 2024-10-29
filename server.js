@@ -1,66 +1,37 @@
+// server.js
 const express = require('express');
-const mongoose = require('mongoose');
 const http = require('http');
 const socketIo = require('socket.io');
-const path = require('path'); // Thêm module path
-const User = require('./models/User');
-const Message = require('./models/Message');
+const moment = require('moment');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server, {
-    cors: {
-        origin: '*', // Hoặc chỉ định domain cụ thể như 'http://localhost:8847'
-        methods: ['GET', 'POST']
-    }
-});
+const io = socketIo(server);
 
-// Middleware cho API
-app.use(express.json());
+app.use(express.static('public'));
 
-// Kết nối tới MongoDB
-mongoose.connect('mongodb://localhost:27017/chat-app', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-}).then(() => console.log('MongoDB connected'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+let guestCount = 0;
 
-// Phục vụ các tệp tĩnh từ thư mục public
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Route để trả về index.html
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Đăng ký các route ở đây
-const authRoutes = require('./routes/auth');
-app.use('/api/auth', authRoutes);
-
-const chatRoutes = require('./routes/chat');
-app.use('/api/chat', chatRoutes);
-
-// Sự kiện cho Socket.io
 io.on('connection', (socket) => {
-    console.log('New client connected');
+  guestCount++;
+  const guestName = `guest_${guestCount}`;
+  socket.emit('assign name', guestName);
 
-    socket.on('joinRoom', ({ roomId }) => {
-        socket.join(roomId);
-        console.log(`User joined room: ${roomId}`);
-    });
+  console.log(`${guestName} connected`);
 
-    socket.on('sendMessage', async ({ roomId, senderID, content }) => {
-        const message = new Message({ roomID: roomId, senderID, content });
-        await message.save();
-        console.log(`Message saved: ${content}`); // Log khi lưu tin nhắn thành công
-        io.to(roomId).emit('newMessage', message);
-        console.log(`Message sent to room ${roomId}:`, message); // Log khi gửi sự kiện `newMessage`
-    });    
+  socket.on('chat message', (msg) => {
+    const now = moment();
+    const isToday = now.isSame(moment(), 'day');
+    const time = isToday ? `Today at ${now.format('h:mm A')}` : now.format('MMMM Do YYYY, h:mm A');
+    io.emit('chat message', { user: guestName, text: msg, time: time });
+  });
 
-    socket.on('disconnect', () => {
-        console.log('Client disconnected');
-    });
+  socket.on('disconnect', () => {
+    console.log(`${guestName} disconnected`);
+  });
 });
 
-const PORT = process.env.PORT || 8847;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const PORT = 3000;
+server.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
