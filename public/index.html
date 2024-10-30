@@ -5,20 +5,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat App</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css"> <!-- Liên kết tới file CSS -->
 </head>
 <body>
+  <!-- Danh sách các tin nhắn -->
   <ul id="messages"></ul>
+  
+  <!-- Form nhập tin nhắn và chọn file -->
   <form id="form" action="">
-    <input id="input" autocomplete="off" placeholder="Type a message..." />
-    <input type="file" id="imageInput" accept="image/*,video/*" multiple style="display: none;" />
-    <input type="file" id="fileInput" style="display: none;" />
-    <button type="button" id="sendImage">Send Image/Video</button>
-    <button type="button" id="sendFile">Send File</button>
-    <button type="submit" id="send">Send</button>
+    <input id="input" autocomplete="off" placeholder="Type a message..." /> <!-- Ô nhập tin nhắn -->
+    <input type="file" id="imageInput" accept="image/*,video/*" multiple style="display: none;" /> <!-- Ô chọn file ảnh/video -->
+    <input type="file" id="fileInput" style="display: none;" /> <!-- Ô chọn file -->
+    <button type="button" id="sendImage">Send Image/Video</button> <!-- Nút gửi ảnh/video -->
+    <button type="button" id="sendFile">Send File</button> <!-- Nút gửi file -->
+    <button type="submit" id="send">Send</button> <!-- Nút gửi tin nhắn -->
   </form>
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="scripts.js"></script>
+  <!-- Liên kết tới các file JavaScript -->
+  <script src="/socket.io/socket.io.js"></script> <!-- Liên kết tới thư viện Socket.IO -->
+  <script src="scripts.js"></script> <!-- Liên kết tới file JavaScript -->
 </body>
 </html>

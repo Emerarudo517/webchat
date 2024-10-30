@@ -1,13 +1,17 @@
 // public/scripts.js
+
+// Kết nối
 const socket = io();
 let userName = '';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
+// Nhận id khách từ server
 socket.on('assign name', (name) => {
   userName = name;
 });
 
+// Lấy các phần tử DOM
 const form = document.getElementById('form');
 const input = document.getElementById('input');
 const messages = document.getElementById('messages');
@@ -16,13 +20,14 @@ const fileInput = document.getElementById('fileInput');
 const sendImageButton = document.getElementById('sendImage');
 const sendFileButton = document.getElementById('sendFile');
 
-// Fetch old messages when the page loads
+// Lấy các tin nhắn cũ
 document.addEventListener('DOMContentLoaded', async () => {
   const response = await fetch('/messages');
   const oldMessages = await response.json();
   oldMessages.forEach(addMessageToUI);
 });
 
+// Gửi tin nhắn
 form.addEventListener('submit', (e) => {
   e.preventDefault();
   if (input.value) {
@@ -31,19 +36,22 @@ form.addEventListener('submit', (e) => {
   }
 });
 
+// Gửi ảnh/video
 sendImageButton.addEventListener('click', () => {
   imageInput.click();
 });
 
+// Gửi file
 sendFileButton.addEventListener('click', () => {
   fileInput.click();
 });
 
+// Chọn file ảnh/video
 imageInput.addEventListener('change', () => {
   const files = Array.from(imageInput.files);
   if (files.length > 0) {
     if (files.some(file => file.size > MAX_FILE_SIZE)) {
-      alert('One or more files exceed the maximum size of 5MB.');
+      alert('Vui lòng gửi file dưới 5MB.');
       return;
     }
     const fileData = [];
@@ -61,11 +69,12 @@ imageInput.addEventListener('change', () => {
   }
 });
 
+// Chọn file
 fileInput.addEventListener('change', () => {
   const files = Array.from(fileInput.files);
   if (files.length > 0) {
     if (files.some(file => file.size > MAX_FILE_SIZE)) {
-      alert('One or more files exceed the maximum size of 5MB.');
+      alert('Vui lòng gửi file dưới 5MB.');
       return;
     }
     const fileData = [];
@@ -83,10 +92,12 @@ fileInput.addEventListener('change', () => {
   }
 });
 
+// Nhận tin nhắn và hiển thị
 socket.on('chat message', (msg) => {
   addMessageToUI(msg);
 });
 
+// Thêm tin nhắn vào giao diện
 function addMessageToUI(msg) {
   const item = document.createElement('li');
   item.innerHTML = `<strong>${msg.user}</strong> <em>${msg.time}</em><br>${msg.text}`;

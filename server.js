@@ -6,12 +6,14 @@ const mongoose = require('mongoose');
 const fs = require('fs');
 const Message = require('./models/Message');
 
+// Khởi tạo Express và server HTTP
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   maxHttpBufferSize: 5 * 1024 * 1024 // 5MB
 });
 
+// Kết nối MongoDB
 mongoose.connect('mongodb://localhost:27017/chat-app', {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -19,7 +21,7 @@ mongoose.connect('mongodb://localhost:27017/chat-app', {
 
 app.use(express.static('public'));
 
-// API endpoint to get old messages
+// API lấy các tin nhắn từ cơ sở dữ liệu
 app.get('/messages', async (req, res) => {
   try {
     const messages = await Message.find().sort({ _id: 1 }).exec();
@@ -29,7 +31,7 @@ app.get('/messages', async (req, res) => {
   }
 });
 
-// Read guest count from file
+// Đọc số lượng khách từ file
 let guestCount = 0;
 try {
   const data = fs.readFileSync('guestCount.json', 'utf8');
@@ -39,6 +41,7 @@ try {
   console.error('Error reading guest count:', err);
 }
 
+// Xử lý kết nối Socket.IO
 io.on('connection', (socket) => {
   guestCount++;
   const guestName = `guest_${guestCount}`;
@@ -46,6 +49,7 @@ io.on('connection', (socket) => {
 
   console.log(`${guestName} connected`);
 
+  // Xử lý sự kiện nhận tin nhắn
   socket.on('chat message', async (msg) => {
     const now = moment();
     const isToday = now.isSame(moment(), 'day');
@@ -63,11 +67,12 @@ io.on('connection', (socket) => {
     io.emit('chat message', { user: guestName, text: msg.text, time: time, files: msg.files });
   });
 
+  // Xử lý sự kiện ngắt kết nối
   socket.on('disconnect', () => {
     console.log(`${guestName} disconnected`);
   });
 
-  // Save guest count to file
+  // Lưu số lượng khách vào file
   fs.writeFileSync('guestCount.json', JSON.stringify({ count: guestCount }), 'utf8');
 });
 
