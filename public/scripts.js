@@ -16,6 +16,13 @@ const fileInput = document.getElementById('fileInput');
 const sendImageButton = document.getElementById('sendImage');
 const sendFileButton = document.getElementById('sendFile');
 
+// Fetch old messages when the page loads
+document.addEventListener('DOMContentLoaded', async () => {
+  const response = await fetch('/messages');
+  const oldMessages = await response.json();
+  oldMessages.forEach(addMessageToUI);
+});
+
 form.addEventListener('submit', (e) => {
   e.preventDefault();
   if (input.value) {
@@ -77,6 +84,10 @@ fileInput.addEventListener('change', () => {
 });
 
 socket.on('chat message', (msg) => {
+  addMessageToUI(msg);
+});
+
+function addMessageToUI(msg) {
   const item = document.createElement('li');
   item.innerHTML = `<strong>${msg.user}</strong> <em>${msg.time}</em><br>${msg.text}`;
   if (msg.files) {
@@ -97,4 +108,4 @@ socket.on('chat message', (msg) => {
     });
   }
   messages.insertBefore(item, messages.firstChild);
-});
+}
